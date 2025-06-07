@@ -96,6 +96,14 @@ export interface Category {
   subcategories?: Category[];
 }
 
+export interface Collection {
+  id: number;
+  name: string;
+  image: string;
+  notes: string;
+  parent: number | null;
+}
+
 export interface CartItem {
   id: string;
   product: Product;

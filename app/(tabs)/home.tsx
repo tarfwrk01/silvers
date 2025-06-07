@@ -14,40 +14,27 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCollections } from '../../contexts/CollectionsContext';
 import { useProducts } from '../../contexts/ProductsContext';
-import { categories, promotions } from '../../data/sampleData';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const { featuredProducts, loading, error, refreshProducts } = useProducts();
+  const { collections, loading: collectionsLoading, error: collectionsError, refreshCollections } = useCollections();
   const insets = useSafeAreaInsets();
 
-  const renderCategory = ({ item }: { item: any }) => (
+  const renderCollection = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={styles.categoryCard}
-      onPress={() => router.push(`/category/${item.id}`)}
+      style={styles.collectionCard}
+      onPress={() => router.push(`/collection/${item.id}`)}
     >
-      <Image source={{ uri: item.image }} style={styles.categoryImage} />
-      <View style={styles.categoryOverlay}>
-        <Ionicons name={item.icon} size={24} color="#FFFFFF" />
-        <Text style={styles.categoryName}>{item.name}</Text>
-        <Text style={styles.categoryCount}>{item.productCount} items</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderPromotion = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.promotionCard}>
-      <Image source={{ uri: item.image }} style={styles.promotionImage} />
-      <View style={styles.promotionContent}>
-        <Text style={styles.promotionTitle}>{item.title}</Text>
-        <Text style={styles.promotionDescription}>{item.description}</Text>
-        {item.code && (
-          <View style={styles.promoCodeContainer}>
-            <Text style={styles.promoCode}>Code: {item.code}</Text>
-          </View>
+      <Image source={{ uri: item.image }} style={styles.collectionImage} />
+      <View style={styles.collectionOverlay}>
+        <Text style={styles.collectionName}>{item.name}</Text>
+        {item.notes && (
+          <Text style={styles.collectionNotes}>{item.notes}</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -55,7 +42,8 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { paddingBottom: insets.bottom }]}
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
@@ -69,35 +57,44 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Promotions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Special Offers</Text>
-        <FlatList
-          data={promotions}
-          renderItem={renderPromotion}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.promotionsList}
-        />
-      </View>
-
-      {/* Categories */}
+      {/* Collections */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Shop by Category</Text>
+          <Text style={styles.sectionTitle}>Our Collections</Text>
           <TouchableOpacity>
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={categories.slice(0, 6)}
-          renderItem={renderCategory}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          scrollEnabled={false}
-          contentContainerStyle={styles.categoriesGrid}
-        />
+
+        {collectionsLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#6366F1" />
+            <Text style={styles.loadingText}>Loading collections...</Text>
+          </View>
+        ) : collectionsError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Failed to load collections</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={refreshCollections}
+            >
+              <Text style={styles.retryText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : collections.length > 0 ? (
+          <FlatList
+            data={collections.slice(0, 6)}
+            renderItem={renderCollection}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            scrollEnabled={false}
+            contentContainerStyle={styles.collectionsGrid}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No collections available</Text>
+          </View>
+        )}
       </View>
 
       {/* Featured Products */}
@@ -199,15 +196,16 @@ const styles = {
     fontWeight: '600',
     color: '#6366F1',
   },
-  promotionsList: {
-    paddingRight: 16,
+  collectionsGrid: {
+    gap: 12,
   },
-  promotionCard: {
-    width: width * 0.8,
+  collectionCard: {
+    flex: 1,
     height: 120,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    marginRight: 16,
+    marginHorizontal: 6,
+    marginBottom: 12,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: {
@@ -215,77 +213,32 @@ const styles = {
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  promotionImage: {
+  collectionImage: {
     width: '100%',
     height: '100%',
     position: 'absolute',
   },
-  promotionContent: {
+  collectionOverlay: {
     flex: 1,
-    padding: 16,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  promotionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  promotionDescription: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  promoCodeContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
-  },
-  promoCode: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  categoriesGrid: {
-    gap: 12,
-  },
-  categoryCard: {
-    flex: 1,
-    height: 100,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginHorizontal: 6,
-    marginBottom: 12,
-  },
-  categoryImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-  },
-  categoryOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 12,
   },
-  categoryName: {
-    fontSize: 14,
-    fontWeight: '600',
+  collectionName: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginTop: 4,
     textAlign: 'center',
+    marginBottom: 4,
   },
-  categoryCount: {
-    fontSize: 11,
+  collectionNotes: {
+    fontSize: 12,
     color: '#E5E7EB',
-    marginTop: 2,
+    textAlign: 'center',
   },
   productsGrid: {
     gap: 16,

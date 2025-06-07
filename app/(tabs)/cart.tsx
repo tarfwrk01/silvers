@@ -168,7 +168,7 @@ export default function CartScreen() {
       {renderCartSummary()}
 
       {/* Checkout Button */}
-      <View style={[styles.checkoutContainer, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.checkoutContainer, { paddingBottom: 100 + insets.bottom }]}>
         <TouchableOpacity style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
           <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />

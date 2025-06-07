@@ -1,4 +1,4 @@
-import { TursoApiResponse, TursoProduct, Product } from '../types';
+import { Product, TursoApiResponse, TursoProduct } from '../types';
 
 // Turso database configuration
 const TURSO_URL = 'https://skjsilverssmithgmailcom-tarframework.turso.io/v2/pipeline';
@@ -175,7 +175,7 @@ export class TursoApiService {
   async fetchProductById(id: string): Promise<Product | null> {
     try {
       const response = await this.executeQuery(`SELECT * FROM products WHERE id = ${id} LIMIT 1`);
-      
+
       if (!response.results || response.results.length === 0) {
         return null;
       }
@@ -187,10 +187,96 @@ export class TursoApiService {
 
       const { cols, rows } = result.response.result;
       const tursoProduct = this.parseRowData(cols, rows[0]);
-      
+
       return this.transformToProduct(tursoProduct);
     } catch (error) {
       console.error('Failed to fetch product by ID:', error);
+      return null;
+    }
+  }
+
+  async fetchCollections(): Promise<any[]> {
+    try {
+      const response = await this.executeQuery('SELECT * FROM collections ORDER BY name ASC');
+
+      if (!response.results || response.results.length === 0) {
+        return [];
+      }
+
+      const result = response.results[0];
+      if (result.type !== 'ok' || !result.response?.result?.rows) {
+        throw new Error('Invalid response format');
+      }
+
+      const { cols, rows } = result.response.result;
+
+      const collections = rows.map(row => {
+        const collection: any = {};
+        cols.forEach((col, index) => {
+          const value = row[index]?.value;
+          collection[col.name] = value;
+        });
+        return collection;
+      });
+
+      return collections;
+    } catch (error) {
+      console.error('Failed to fetch collections:', error);
+      throw error;
+    }
+  }
+
+  async fetchProductsByCollection(collectionName: string): Promise<Product[]> {
+    try {
+      const response = await this.executeQuery(
+        'SELECT * FROM products WHERE collection = ? AND (publish = "published" OR publish = "draft") ORDER BY title ASC',
+        [collectionName]
+      );
+
+      if (!response.results || response.results.length === 0) {
+        return [];
+      }
+
+      const result = response.results[0];
+      if (result.type !== 'ok' || !result.response?.result?.rows) {
+        throw new Error('Invalid response format');
+      }
+
+      const { cols, rows } = result.response.result;
+
+      const tursoProducts = rows.map(row => this.parseRowData(cols, row));
+      const products = tursoProducts.map(tursoProduct => this.transformToProduct(tursoProduct));
+
+      return products;
+    } catch (error) {
+      console.error('Failed to fetch products by collection:', error);
+      throw error;
+    }
+  }
+
+  async fetchCollectionById(id: number): Promise<any | null> {
+    try {
+      const response = await this.executeQuery('SELECT * FROM collections WHERE id = ? LIMIT 1', [id]);
+
+      if (!response.results || response.results.length === 0) {
+        return null;
+      }
+
+      const result = response.results[0];
+      if (result.type !== 'ok' || !result.response?.result?.rows || result.response.result.rows.length === 0) {
+        return null;
+      }
+
+      const { cols, rows } = result.response.result;
+      const collection: any = {};
+      cols.forEach((col, index) => {
+        const value = rows[0][index]?.value;
+        collection[col.name] = value;
+      });
+
+      return collection;
+    } catch (error) {
+      console.error('Failed to fetch collection by ID:', error);
       return null;
     }
   }

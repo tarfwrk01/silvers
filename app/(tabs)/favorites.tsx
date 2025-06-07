@@ -60,7 +60,7 @@ export default function FavoritesScreen() {
         renderItem={renderProduct}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        contentContainerStyle={[styles.favoritesList, { paddingBottom: insets.bottom + 32 }]}
+        contentContainerStyle={[styles.favoritesList, { paddingBottom: 100 + insets.bottom }]}
         columnWrapperStyle={styles.productRow}
         showsVerticalScrollIndicator={false}
       />

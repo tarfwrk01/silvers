@@ -237,7 +237,7 @@ export default function ShopScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
@@ -292,7 +292,7 @@ export default function ShopScreen() {
           renderItem={renderProduct}
           keyExtractor={(item) => item.id}
           numColumns={2}
-          contentContainerStyle={styles.productsList}
+          contentContainerStyle={[styles.productsList, { paddingBottom: 100 + insets.bottom }]}
           columnWrapperStyle={styles.productRow}
           showsVerticalScrollIndicator={false}
         />
