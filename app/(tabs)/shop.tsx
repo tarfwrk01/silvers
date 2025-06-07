@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import {
+    ActivityIndicator,
     FlatList,
     Modal,
     ScrollView,
@@ -8,13 +9,17 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
-import { allProducts, categories } from '../../data/sampleData';
+import { useProducts } from '../../contexts/ProductsContext';
+import { categories } from '../../data/sampleData';
 import { SearchFilters } from '../../types';
 
 export default function ShopScreen() {
+  const { products, loading, error, refreshProducts } = useProducts();
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
@@ -22,7 +27,7 @@ export default function ShopScreen() {
   });
 
   const filteredProducts = useMemo(() => {
-    let result = [...allProducts];
+    let result = [...products];
 
     // Search filter
     if (searchQuery.trim()) {
@@ -85,7 +90,7 @@ export default function ShopScreen() {
     }
 
     return result;
-  }, [searchQuery, filters]);
+  }, [products, searchQuery, filters]);
 
   const renderProduct = ({ item }: { item: any }) => (
     <ProductCard product={item} style={styles.productCard} />
@@ -232,7 +237,7 @@ export default function ShopScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
@@ -266,15 +271,32 @@ export default function ShopScreen() {
       </View>
 
       {/* Products Grid */}
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.productsList}
-        columnWrapperStyle={styles.productRow}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6366F1" />
+          <Text style={styles.loadingText}>Loading products...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load products</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={refreshProducts}
+          >
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.productsList}
+          columnWrapperStyle={styles.productRow}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {renderFilterModal()}
     </View>
@@ -289,7 +311,8 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 16,
+    paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
@@ -425,5 +448,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#EF4444',
+    marginBottom: 12,
+  },
+  retryButton: {
+    backgroundColor: '#6366F1',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

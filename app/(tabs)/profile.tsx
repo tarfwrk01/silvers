@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
@@ -16,6 +17,7 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { itemCount, total } = useCart();
   const { favorites } = useFavorites();
+  const insets = useSafeAreaInsets();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -78,7 +80,11 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
@@ -147,7 +153,8 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     backgroundColor: '#FFFFFF',
-    paddingVertical: 32,
+    paddingTop: 40,
+    paddingBottom: 32,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderBottomWidth: 1,

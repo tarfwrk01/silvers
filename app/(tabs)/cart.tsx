@@ -1,20 +1,22 @@
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import React from 'react';
+import {
+    Alert,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../../contexts/CartContext';
 import { CartItem } from '../../types';
 
 export default function CartScreen() {
   const { items, total, itemCount, updateQuantity, removeFromCart, clearCart } = useCart();
+  const insets = useSafeAreaInsets();
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -166,7 +168,7 @@ export default function CartScreen() {
       {renderCartSummary()}
 
       {/* Checkout Button */}
-      <View style={styles.checkoutContainer}>
+      <View style={[styles.checkoutContainer, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={styles.checkoutButton}>
           <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
           <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
@@ -186,7 +188,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',

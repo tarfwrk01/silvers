@@ -19,6 +19,72 @@ export interface Product {
   updatedAt: string;
 }
 
+// Turso database product structure
+export interface TursoProduct {
+  id: number;
+  title: string;
+  image: string;
+  medias: string; // JSON array
+  excerpt: string;
+  notes: string;
+  type: string;
+  category: string;
+  collection: string;
+  unit: string;
+  price: number;
+  saleprice: number;
+  vendor: string;
+  brand: string;
+  options: string; // JSON array
+  modifiers: string; // JSON array
+  metafields: string; // JSON object
+  saleinfo: string;
+  stores: string;
+  pos: number;
+  website: number;
+  seo: string; // JSON object
+  tags: string;
+  cost: number;
+  qrcode: string;
+  stock: number;
+  createdat: string;
+  updatedat: string;
+  publishat: string;
+  publish: string;
+  promoinfo: string;
+  featured: number;
+  relproducts: string; // JSON array
+  sellproducts: string; // JSON array
+}
+
+// Turso API response structure
+export interface TursoApiResponse {
+  baton: null;
+  base_url: null;
+  results: Array<{
+    type: string;
+    response: {
+      type: string;
+      result: {
+        cols: Array<{
+          name: string;
+          decltype: string;
+        }>;
+        rows: Array<Array<{
+          type: string;
+          value: string;
+        }>>;
+        affected_row_count: number;
+        last_insert_rowid: null;
+        replication_index: null;
+        rows_read: number;
+        rows_written: number;
+        query_duration_ms: number;
+      };
+    };
+  }>;
+}
+
 export interface Category {
   id: string;
   name: string;

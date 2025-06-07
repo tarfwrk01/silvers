@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     FlatList,
     Image,
@@ -10,14 +11,18 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
 import { useAuth } from '../../contexts/AuthContext';
-import { categories, featuredProducts, promotions } from '../../data/sampleData';
+import { useProducts } from '../../contexts/ProductsContext';
+import { categories, promotions } from '../../data/sampleData';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { featuredProducts, loading, error, refreshProducts } = useProducts();
+  const insets = useSafeAreaInsets();
 
   const renderCategory = ({ item }: { item: any }) => (
     <TouchableOpacity
@@ -49,7 +54,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { paddingBottom: insets.bottom }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -100,15 +108,37 @@ export default function HomeScreen() {
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={featuredProducts}
-          renderItem={({ item }) => <ProductCard product={item} />}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          scrollEnabled={false}
-          contentContainerStyle={styles.productsGrid}
-          columnWrapperStyle={styles.productRow}
-        />
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#6366F1" />
+            <Text style={styles.loadingText}>Loading products...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Failed to load products</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={refreshProducts}
+            >
+              <Text style={styles.retryText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : featuredProducts.length > 0 ? (
+          <FlatList
+            data={featuredProducts}
+            renderItem={({ item }) => <ProductCard product={item} />}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            scrollEnabled={false}
+            contentContainerStyle={styles.productsGrid}
+            columnWrapperStyle={styles.productRow}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No featured products available</Text>
+          </View>
+        )}
       </View>
 
       {/* Bottom Spacing */}
@@ -127,7 +157,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: '#FFFFFF',
   },
@@ -265,5 +295,42 @@ const styles = {
   },
   bottomSpacing: {
     height: 32,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#EF4444',
+    marginBottom: 12,
+  },
+  retryButton: {
+    backgroundColor: '#6366F1',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6B7280',
   },
 };

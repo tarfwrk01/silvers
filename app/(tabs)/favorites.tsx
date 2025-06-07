@@ -1,18 +1,20 @@
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useFavorites } from '../../contexts/FavoritesContext';
+import React from 'react';
+import {
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 export default function FavoritesScreen() {
   const { favorites, clearFavorites } = useFavorites();
+  const insets = useSafeAreaInsets();
 
   const renderProduct = ({ item }: { item: any }) => (
     <ProductCard product={item} style={styles.productCard} />
@@ -58,7 +60,7 @@ export default function FavoritesScreen() {
         renderItem={renderProduct}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        contentContainerStyle={styles.favoritesList}
+        contentContainerStyle={[styles.favoritesList, { paddingBottom: insets.bottom + 32 }]}
         columnWrapperStyle={styles.productRow}
         showsVerticalScrollIndicator={false}
       />
@@ -76,7 +78,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
