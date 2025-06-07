@@ -11,6 +11,16 @@
 7. ✅ Created environment configuration (.env)
 8. ✅ Added React Native polyfills (polyfills.ts)
 9. ✅ Fixed file structure issues and tested app successfully
+10. ✅ **NEW: Set up proper Expo Router file-based routing system**
+    - Created (auth) group for login/signup screens
+    - Created (tabs) group for authenticated home screens
+    - Implemented proper navigation flow with redirects
+    - Added tab navigation with Home, Profile, and Settings
+11. ✅ **NEW: Cleaned up all dummy content from tab screens**
+    - Removed all sample content and placeholder text
+    - Simplified screens to minimal, clean layouts
+    - Kept only essential functionality (sign out in profile)
+    - Ready for custom content implementation
 
 ## Setup Instructions:
 
@@ -61,11 +71,20 @@
 ├── contexts/
 │   └── AuthContext.tsx     # Authentication context and hooks
 ├── components/
-│   ├── LoginScreen.tsx     # Magic code login interface
-│   └── AuthenticatedScreen.tsx  # Main app screen for logged-in users
+│   ├── LoginScreen.tsx     # Legacy login component (kept for reference)
+│   └── AuthenticatedScreen.tsx  # Legacy auth component (kept for reference)
 ├── app/
-│   ├── _layout.tsx         # Root layout with AuthProvider
-│   └── index.tsx           # Main screen with auth routing
+│   ├── _layout.tsx         # Root layout with AuthProvider and Stack navigation
+│   ├── index.tsx           # Entry point with auth-based redirects
+│   ├── (auth)/             # Authentication screens group
+│   │   ├── _layout.tsx     # Auth layout with Stack navigation
+│   │   ├── login.tsx       # Login screen with magic code
+│   │   └── signup.tsx      # Signup screen with magic code
+│   └── (tabs)/             # Authenticated app screens group
+│       ├── _layout.tsx     # Tab navigation layout
+│       ├── home.tsx        # Home/dashboard screen
+│       ├── profile.tsx     # User profile screen
+│       └── settings.tsx    # App settings screen
 ├── polyfills.ts            # React Native polyfills
 └── .env                    # Environment configuration
 ```

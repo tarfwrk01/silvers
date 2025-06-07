@@ -1,0 +1,222 @@
+import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [step, setStep] = useState<'email' | 'code'>('email');
+  const { signInWithMagicCode, verifyMagicCode, isLoading } = useAuth();
+
+  const handleSendMagicCode = async () => {
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    try {
+      await signInWithMagicCode(email.trim().toLowerCase());
+      setStep('code');
+      Alert.alert(
+        'Magic Code Sent',
+        'Check your email for the magic code and enter it below.'
+      );
+    } catch (err) {
+      Alert.alert('Error', 'Failed to send magic code. Please try again.');
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!code.trim()) {
+      Alert.alert('Error', 'Please enter the magic code');
+      return;
+    }
+
+    try {
+      await verifyMagicCode(email.trim().toLowerCase(), code.trim());
+      // Navigation will be handled by the auth state change
+    } catch (err) {
+      Alert.alert('Error', 'Invalid magic code. Please try again.');
+    }
+  };
+
+  const handleBackToEmail = () => {
+    setStep('email');
+    setCode('');
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.content}>
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>
+          {step === 'email'
+            ? 'Enter your email to sign in'
+            : 'Enter the magic code sent to your email'}
+        </Text>
+
+        {step === 'email' ? (
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleSendMagicCode}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Send Magic Code</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.form}>
+            <Text style={styles.emailDisplay}>{email}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter magic code"
+              value={code}
+              onChangeText={setCode}
+              keyboardType="number-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleVerifyCode}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Verify Code</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleBackToEmail}
+              disabled={isLoading}
+            >
+              <Text style={styles.backButtonText}>Back to Email</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Link href="/(auth)/signup" style={styles.link}>
+            <Text style={styles.linkText}>Sign up</Text>
+          </Link>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backButton: {
+    alignItems: 'center',
+    padding: 8,
+  },
+  backButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+  },
+  emailDisplay: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  footer: {
+    flexDirection: 'row',
+    marginTop: 40,
+  },
+  footerText: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  link: {
+    marginLeft: 4,
+  },
+  linkText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+});
