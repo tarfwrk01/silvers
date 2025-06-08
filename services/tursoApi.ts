@@ -80,21 +80,24 @@ export class TursoApiService {
     const images = [tursoProduct.image, ...medias].filter(Boolean);
 
     // Parse options for variants/specifications
-    const options = parseJsonField(tursoProduct.options, []);
+    const rawOptions = parseJsonField(tursoProduct.options, []);
     const metafields = parseJsonField(tursoProduct.metafields, {});
     const seoData = parseJsonField(tursoProduct.seo, {});
 
-    // Generate specifications from metafields and options
+    // Transform options to ProductOption format
+    const options: any[] = rawOptions.map((option: any) => ({
+      id: option.id || Math.random(),
+      title: option.title || '',
+      value: option.value || '',
+      identifierType: option.identifierType || 'text',
+      identifierValue: option.identifierValue || option.value || '',
+      group: option.group || 'default'
+    }));
+
+    // Generate specifications from metafields only (not options)
     const specifications: Record<string, string> = {
       ...metafields,
     };
-
-    // Add options as specifications
-    options.forEach((option: any) => {
-      if (option.title && option.value) {
-        specifications[option.title] = option.value;
-      }
-    });
 
     // Parse tags
     const tags = tursoProduct.tags ? tursoProduct.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
@@ -113,13 +116,15 @@ export class TursoApiService {
       category: tursoProduct.category,
       categoryId: tursoProduct.category.toLowerCase().replace(/\s+/g, '-'),
       collection: tursoProduct.collection || undefined,
-      brand: tursoProduct.brand || tursoProduct.vendor || 'Unknown',
+      brand: tursoProduct.brand || 'Unknown',
+      vendor: tursoProduct.vendor && tursoProduct.vendor.trim() !== '' ? tursoProduct.vendor : undefined,
       rating: Math.round(rating * 10) / 10,
       reviewCount: reviewCount,
       inStock: tursoProduct.stock > 0,
       stockQuantity: tursoProduct.stock,
       tags: tags,
       features: [], // Could be extracted from notes or description
+      options: options.length > 0 ? options : undefined,
       specifications: Object.keys(specifications).length > 0 ? specifications : undefined,
       createdAt: tursoProduct.createdat,
       updatedAt: tursoProduct.updatedat,

@@ -1,3 +1,12 @@
+export interface ProductOption {
+  id: number;
+  title: string;
+  value: string;
+  identifierType: string;
+  identifierValue: string;
+  group: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -9,12 +18,14 @@ export interface Product {
   categoryId: string;
   collection?: string;
   brand: string;
+  vendor?: string;
   rating: number;
   reviewCount: number;
   inStock: boolean;
   stockQuantity: number;
   tags: string[];
   features: string[];
+  options?: ProductOption[];
   specifications?: Record<string, string>;
   createdAt: string;
   updatedAt: string;

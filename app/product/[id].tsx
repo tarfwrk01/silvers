@@ -2,9 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     Dimensions,
     Image,
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,6 +14,8 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ProductOptions from '../../components/ProductOptions';
+import ZoomableImage from '../../components/ZoomableImage';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProduct } from '../../contexts/ProductsContext';
@@ -22,6 +26,8 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, any>>({});
+  const [isImageZoomed, setIsImageZoomed] = useState(false);
 
   const { addToCart, isInCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -103,34 +109,41 @@ export default function ProductDetailScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => toggleFavorite(product)}
-        >
-          <Ionicons
-            name={isFavorite(product.id) ? "heart" : "heart-outline"}
-            size={24}
-            color={isFavorite(product.id) ? "#EF4444" : "#6B7280"}
-          />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Product Images */}
+        {/* Product Images with Overlay Header */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: product.images[selectedImageIndex] }}
-            style={styles.mainImage}
-            resizeMode="cover"
-          />
+          <TouchableOpacity
+            style={styles.mainImageTouchable}
+            activeOpacity={0.9}
+            onPress={() => setIsImageZoomed(true)}
+          >
+            <Image
+              source={{ uri: product.images[selectedImageIndex] }}
+              style={styles.mainImage}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* Transparent Header Overlay */}
+          <View style={[styles.headerOverlay, { paddingTop: insets.top + 10 }]}>
+            <TouchableOpacity
+              style={styles.overlayButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.overlayButton}
+              onPress={() => toggleFavorite(product)}
+            >
+              <Ionicons
+                name={isFavorite(product.id) ? "heart" : "heart-outline"}
+                size={24}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+          </View>
+
           {product.images.length > 1 && (
             <ScrollView
               horizontal
@@ -156,8 +169,31 @@ export default function ProductDetailScreen() {
 
         {/* Product Info */}
         <View style={styles.productInfo}>
-          <Text style={styles.brand}>{product.brand}</Text>
           <Text style={styles.productName}>{product.name}</Text>
+
+          {/* Brand and Vendor Cards */}
+          <View style={styles.infoCardsContainer}>
+            {product.brand && (
+              <View style={styles.infoCard}>
+                <Text style={styles.infoCardLabel}>Brand</Text>
+                <Text style={styles.infoCardValue}>{product.brand}</Text>
+              </View>
+            )}
+            {product.vendor && (
+              <View style={styles.infoCard}>
+                <Text style={styles.infoCardLabel}>Vendor</Text>
+                <Text style={styles.infoCardValue}>{product.vendor}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Product Options */}
+          {product.options && product.options.length > 0 && (
+            <ProductOptions
+              options={product.options}
+              onSelectionChange={setSelectedOptions}
+            />
+          )}
 
           {/* Features */}
           {product.features && product.features.length > 0 && (
@@ -223,6 +259,35 @@ export default function ProductDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Image Zoom Modal */}
+      <Modal
+        visible={isImageZoomed}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsImageZoomed(false)}
+      >
+        <View style={styles.zoomModalContainer}>
+          <TouchableOpacity
+            style={styles.zoomModalOverlay}
+            activeOpacity={1}
+            onPress={() => setIsImageZoomed(false)}
+          >
+            <View style={styles.zoomModalHeader}>
+              <TouchableOpacity
+                style={styles.zoomCloseButton}
+                onPress={() => setIsImageZoomed(false)}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <ZoomableImage
+              source={{ uri: product.images[selectedImageIndex] }}
+              style={styles.zoomImageContainer}
+            />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -232,36 +297,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  header: {
+  imageContainer: {
+    backgroundColor: '#F9FAFB',
+    position: 'relative',
+  },
+  mainImageTouchable: {
+    width: width,
+    height: width * 0.8,
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+  },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
+    zIndex: 10,
   },
-  backButton: {
+  overlayButton: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  favoriteButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageContainer: {
-    backgroundColor: '#F9FAFB',
-  },
-  mainImage: {
-    width: width,
-    height: width * 0.8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 20,
   },
   thumbnailContainer: {
     paddingVertical: 16,
@@ -288,18 +355,39 @@ const styles = StyleSheet.create({
   productInfo: {
     padding: 20,
   },
-  brand: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
   productName: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 24,
+    marginBottom: 20,
     lineHeight: 36,
+  },
+  infoCardsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  infoCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  infoCardLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  infoCardValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
   },
   sectionTitle: {
     fontSize: 20,
@@ -413,5 +501,31 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  zoomModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  zoomModalOverlay: {
+    flex: 1,
+  },
+  zoomModalHeader: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+  },
+  zoomCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
