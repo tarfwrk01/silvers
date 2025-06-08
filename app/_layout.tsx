@@ -4,6 +4,7 @@ import { Platform, View } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider } from "../contexts/AuthContext";
 import { CartProvider } from "../contexts/CartContext";
+import { CategoriesProvider } from "../contexts/CategoriesContext";
 import { CollectionsProvider } from "../contexts/CollectionsContext";
 import { FavoritesProvider } from "../contexts/FavoritesContext";
 import { ProductsProvider } from "../contexts/ProductsContext";
@@ -27,22 +28,24 @@ function RootLayoutContent() {
       <AuthProvider>
         <ProductsProvider>
           <CollectionsProvider>
-            <CartProvider>
-              <FavoritesProvider>
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    animation: "none",
-                    animationEnabled: false,
-                    gestureEnabled: false,
-                  }}
-                >
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="(tabs)" />
-                </Stack>
-              </FavoritesProvider>
-            </CartProvider>
+            <CategoriesProvider>
+              <CartProvider>
+                <FavoritesProvider>
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      animation: "none",
+                      animationEnabled: false,
+                      gestureEnabled: false,
+                    }}
+                  >
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="(tabs)" />
+                  </Stack>
+                </FavoritesProvider>
+              </CartProvider>
+            </CategoriesProvider>
           </CollectionsProvider>
         </ProductsProvider>
       </AuthProvider>

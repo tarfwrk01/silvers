@@ -13,12 +13,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
+import { useCategories } from '../../contexts/CategoriesContext';
 import { useProducts } from '../../contexts/ProductsContext';
-import { categories } from '../../data/sampleData';
 import { SearchFilters } from '../../types';
 
 export default function ShopScreen() {
   const { products, loading, error, refreshProducts } = useProducts();
+  const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -43,7 +44,9 @@ export default function ShopScreen() {
 
     // Category filter
     if (filters.category) {
-      result = result.filter(product => product.categoryId === filters.category);
+      result = result.filter(product =>
+        product.category.toLowerCase().trim() === filters.category?.toLowerCase().trim()
+      );
     }
 
     // Price filter
@@ -134,16 +137,16 @@ export default function ShopScreen() {
                   key={category.id}
                   style={[
                     styles.filterOption,
-                    filters.category === category.id && styles.filterOptionActive,
+                    filters.category === category.name && styles.filterOptionActive,
                   ]}
-                  onPress={() => setFilters(prev => ({ 
-                    ...prev, 
-                    category: prev.category === category.id ? undefined : category.id 
+                  onPress={() => setFilters(prev => ({
+                    ...prev,
+                    category: prev.category === category.name ? undefined : category.name
                   }))}
                 >
                   <Text style={[
                     styles.filterOptionText,
-                    filters.category === category.id && styles.filterOptionTextActive,
+                    filters.category === category.name && styles.filterOptionTextActive,
                   ]}>
                     {category.name}
                   </Text>
@@ -263,6 +266,50 @@ export default function ShopScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Category Filters */}
+      <View style={styles.categoryFiltersContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryFiltersContent}
+        >
+          <TouchableOpacity
+            style={[
+              styles.categoryChip,
+              !filters.category && styles.categoryChipActive,
+            ]}
+            onPress={() => setFilters(prev => ({ ...prev, category: undefined }))}
+          >
+            <Text style={[
+              styles.categoryChipText,
+              !filters.category && styles.categoryChipTextActive,
+            ]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          {categories.map(category => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryChip,
+                filters.category === category.name && styles.categoryChipActive,
+              ]}
+              onPress={() => setFilters(prev => ({
+                ...prev,
+                category: prev.category === category.name ? undefined : category.name
+              }))}
+            >
+              <Text style={[
+                styles.categoryChipText,
+                filters.category === category.name && styles.categoryChipTextActive,
+              ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* Results Header */}
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsText}>
@@ -340,6 +387,36 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  categoryFiltersContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    paddingVertical: 12,
+  },
+  categoryFiltersContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  categoryChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  categoryChipActive: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  categoryChipTextActive: {
+    color: '#FFFFFF',
   },
   resultsHeader: {
     paddingHorizontal: 16,

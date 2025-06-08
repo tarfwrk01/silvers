@@ -300,6 +300,52 @@ export class TursoApiService {
       return null;
     }
   }
+
+  async fetchCategories(): Promise<any[]> {
+    try {
+      const response = await this.executeQuery('SELECT * FROM categories ORDER BY name ASC');
+
+      if (!response.results || response.results.length === 0) {
+        return [];
+      }
+
+      const result = response.results[0];
+      if (result.type !== 'ok' || !result.response?.result?.rows) {
+        throw new Error('Invalid response format');
+      }
+
+      const { cols, rows } = result.response.result;
+
+      const categories = rows.map(row => {
+        const category: any = {};
+        cols.forEach((col, index) => {
+          const value = row[index]?.value;
+          const type = row[index]?.type;
+
+          // Convert values based on type
+          switch (type) {
+            case 'integer':
+              category[col.name] = value ? parseInt(value, 10) : 0;
+              break;
+            case 'float':
+              category[col.name] = value ? parseFloat(value) : 0;
+              break;
+            case 'text':
+            default:
+              category[col.name] = value || '';
+              break;
+          }
+        });
+        return category;
+      });
+
+      console.log('Available categories:', categories.map(c => ({ id: c.id, name: c.name })));
+      return categories;
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
