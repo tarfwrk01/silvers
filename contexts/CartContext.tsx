@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { CartItem, Product } from '../types';
 
 interface CartState {
@@ -9,7 +9,7 @@ interface CartState {
 }
 
 interface CartContextType extends CartState {
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedOptions?: Record<string, any>) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -18,7 +18,7 @@ interface CartContextType extends CartState {
 }
 
 type CartAction =
-  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number } }
+  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number; selectedOptions?: Record<string, any> } }
   | { type: 'REMOVE_FROM_CART'; payload: { productId: string } }
   | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
   | { type: 'CLEAR_CART' }
@@ -31,11 +31,14 @@ const CART_STORAGE_KEY = '@silvers_cart';
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const { product, quantity } = action.payload;
-      const existingItemIndex = state.items.findIndex(item => item.product.id === product.id);
-      
+      const { product, quantity, selectedOptions } = action.payload;
+      const existingItemIndex = state.items.findIndex(item =>
+        item.product.id === product.id &&
+        JSON.stringify(item.selectedOptions) === JSON.stringify(selectedOptions)
+      );
+
       let newItems: CartItem[];
-      
+
       if (existingItemIndex >= 0) {
         // Update existing item quantity
         newItems = state.items.map((item, index) =>
@@ -49,14 +52,15 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           id: `${product.id}_${Date.now()}`,
           product,
           quantity,
+          selectedOptions,
           addedAt: new Date().toISOString(),
         };
         newItems = [...state.items, newItem];
       }
-      
+
       const total = newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
       const itemCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
-      
+
       return { items: newItems, total, itemCount };
     }
     
@@ -140,8 +144,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    dispatch({ type: 'ADD_TO_CART', payload: { product, quantity } });
+  const addToCart = (product: Product, quantity: number = 1, selectedOptions?: Record<string, any>) => {
+    dispatch({ type: 'ADD_TO_CART', payload: { product, quantity, selectedOptions } });
   };
 
   const removeFromCart = (productId: string) => {

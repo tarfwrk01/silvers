@@ -76,7 +76,7 @@ export default function ProductDetailScreen() {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    addToCart(product, quantity, selectedOptions);
     Alert.alert('Added to Cart', `${product.name} has been added to your cart.`);
   };
 
@@ -242,12 +242,8 @@ export default function ProductDetailScreen() {
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.addToCartButton,
-            !product.inStock && styles.disabledButton,
-          ]}
+          style={styles.addToCartButton}
           onPress={handleAddToCart}
-          disabled={!product.inStock}
         >
           <Ionicons
             name={isInCart(product.id) ? "checkmark" : "bag"}
@@ -255,7 +251,7 @@ export default function ProductDetailScreen() {
             color="#FFFFFF"
           />
           <Text style={styles.addToCartText}>
-            {!product.inStock ? 'Out of Stock' : isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
+            {isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
           </Text>
         </TouchableOpacity>
       </View>

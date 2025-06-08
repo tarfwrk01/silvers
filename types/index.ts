@@ -121,6 +121,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedVariant?: ProductVariant;
+  selectedOptions?: Record<string, ProductOption>;
   addedAt: string;
 }
 
@@ -251,4 +252,39 @@ export interface Wishlist {
   products: Product[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Turso database order structure
+export interface TursoOrder {
+  id?: number;
+  referid: string;
+  customerid?: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  fulfill: string;
+  currency: string;
+  subtotal: number;
+  total: number;
+  tax: number;
+  discount: number;
+  shipping: number;
+  shipaddrs: string;
+  billaddrs: string;
+  createdat?: string;
+  updatedat?: string;
+}
+
+export interface TursoOrderItem {
+  id?: number;
+  orderid: number;
+  title: string;
+  varianttitle: string;
+  sku: string;
+  qty: number;
+  price: number;
+  total: number;
+  taxrate: number;
+  taxamt: number;
 }

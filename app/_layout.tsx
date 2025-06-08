@@ -5,6 +5,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-cont
 import { AuthProvider } from "../contexts/AuthContext";
 import { CartProvider } from "../contexts/CartContext";
 import { CategoriesProvider } from "../contexts/CategoriesContext";
+import { CheckoutProvider } from "../contexts/CheckoutContext";
 import { CollectionsProvider } from "../contexts/CollectionsContext";
 import { FavoritesProvider } from "../contexts/FavoritesContext";
 import { ProductsProvider } from "../contexts/ProductsContext";
@@ -30,7 +31,8 @@ function RootLayoutContent() {
           <CollectionsProvider>
             <CategoriesProvider>
               <CartProvider>
-                <FavoritesProvider>
+                <CheckoutProvider>
+                  <FavoritesProvider>
                   <Stack
                     screenOptions={{
                       headerShown: false,
@@ -43,7 +45,8 @@ function RootLayoutContent() {
                     <Stack.Screen name="(auth)" />
                     <Stack.Screen name="(tabs)" />
                   </Stack>
-                </FavoritesProvider>
+                  </FavoritesProvider>
+                </CheckoutProvider>
               </CartProvider>
             </CategoriesProvider>
           </CollectionsProvider>
