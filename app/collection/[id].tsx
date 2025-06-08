@@ -1,59 +1,59 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProductCard from '../../components/ProductCard';
-import { tursoApi } from '../../services/tursoApi';
-import { Collection, Product } from '../../types';
+import { useCollections } from '../../contexts/CollectionsContext';
+import { useProducts } from '../../contexts/ProductsContext';
+import { Product } from '../../types';
 
 export default function CollectionDetailScreen() {
   const { id } = useLocalSearchParams();
-  const [collection, setCollection] = useState<Collection | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { products: allProducts, loading: productsLoading } = useProducts();
+  const { collections } = useCollections();
   const [sortBy, setSortBy] = useState<'name' | 'price_asc' | 'price_desc' | 'newest'>('name');
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    fetchCollectionData();
-  }, [id]);
+  // Find collection from the already loaded collections
+  const collection = useMemo(() => {
+    return collections.find(c => c.id.toString() === id) || null;
+  }, [collections, id]);
 
-  const fetchCollectionData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Filter products by collection name
+  const filteredProducts = useMemo(() => {
+    if (!collection || !allProducts.length) return [];
 
-      // Fetch collection details
-      const collectionData = await tursoApi.fetchCollectionById(Number(id));
-      if (!collectionData) {
-        setError('Collection not found');
-        return;
+    console.log('Filtering products for collection:', collection.name);
+    console.log('Total products available:', allProducts.length);
+
+    const filtered = allProducts.filter(product => {
+      // Check if product has a collection field and it matches the collection name
+      const hasCollection = product.collection &&
+        product.collection.toLowerCase().trim() === collection.name.toLowerCase().trim();
+
+      if (product.collection) {
+        console.log(`Product "${product.name}" has collection: "${product.collection}" (matches: ${hasCollection})`);
       }
-      setCollection(collectionData);
 
-      // Fetch products in this collection
-      const productsData = await tursoApi.fetchProductsByCollection(collectionData.name);
-      setProducts(productsData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load collection');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return hasCollection;
+    });
 
-  const sortedProducts = React.useMemo(() => {
-    const sorted = [...products];
+    console.log('Filtered products count:', filtered.length);
+    return filtered;
+  }, [allProducts, collection]);
+
+  const sortedProducts = useMemo(() => {
+    const sorted = [...filteredProducts];
     switch (sortBy) {
       case 'price_asc':
         return sorted.sort((a, b) => a.price - b.price);
@@ -65,7 +65,7 @@ export default function CollectionDetailScreen() {
       default:
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
     }
-  }, [products, sortBy]);
+  }, [filteredProducts, sortBy]);
 
   const renderProduct = ({ item }: { item: Product }) => (
     <ProductCard product={item} style={styles.productCard} />
@@ -91,7 +91,7 @@ export default function CollectionDetailScreen() {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (productsLoading) {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color="#6366F1" />
@@ -100,13 +100,13 @@ export default function CollectionDetailScreen() {
     );
   }
 
-  if (error) {
+  if (!collection) {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <Ionicons name="alert-circle" size={64} color="#EF4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchCollectionData}>
-          <Text style={styles.retryText}>Try Again</Text>
+        <Text style={styles.errorText}>Collection not found</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => router.back()}>
+          <Text style={styles.retryText}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -141,7 +141,7 @@ export default function CollectionDetailScreen() {
                 <Text style={styles.collectionDescription}>{collection.notes}</Text>
               )}
               <Text style={styles.productCount}>
-                {products.length} {products.length === 1 ? 'product' : 'products'}
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
               </Text>
             </View>
           </View>
@@ -225,16 +225,8 @@ const styles = StyleSheet.create({
   collectionInfo: {
     backgroundColor: '#FFFFFF',
     margin: 16,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
   collectionImage: {
     width: '100%',
@@ -276,7 +268,7 @@ const styles = StyleSheet.create({
   sortOption: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#F3F4F6',
     marginRight: 8,
   },

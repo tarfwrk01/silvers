@@ -158,43 +158,6 @@ export default function ProductDetailScreen() {
         <View style={styles.productInfo}>
           <Text style={styles.brand}>{product.brand}</Text>
           <Text style={styles.productName}>{product.name}</Text>
-          
-          {/* Rating */}
-          <View style={styles.ratingContainer}>
-            <View style={styles.stars}>
-              {renderRating()}
-            </View>
-            <Text style={styles.ratingText}>
-              {product.rating} ({product.reviewCount} reviews)
-            </Text>
-          </View>
-
-          {/* Price */}
-          <View style={styles.priceContainer}>
-            <Text style={styles.price}>{formatPrice(product.price)}</Text>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <Text style={styles.originalPrice}>{formatPrice(product.originalPrice)}</Text>
-            )}
-          </View>
-
-          {/* Stock Status */}
-          <View style={styles.stockContainer}>
-            <Ionicons
-              name={product.inStock ? "checkmark-circle" : "close-circle"}
-              size={16}
-              color={product.inStock ? "#10B981" : "#EF4444"}
-            />
-            <Text style={[
-              styles.stockText,
-              { color: product.inStock ? "#10B981" : "#EF4444" }
-            ]}>
-              {product.inStock ? `In Stock (${product.stockQuantity} available)` : 'Out of Stock'}
-            </Text>
-          </View>
-
-          {/* Description */}
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{product.description}</Text>
 
           {/* Features */}
           {product.features && product.features.length > 0 && (
@@ -280,7 +243,7 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -288,7 +251,7 @@ const styles = StyleSheet.create({
   favoriteButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -310,7 +273,7 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: 60,
     height: 60,
-    borderRadius: 8,
+    borderRadius: 6,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -323,71 +286,27 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   productInfo: {
-    padding: 16,
+    padding: 20,
   },
   brand: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#6B7280',
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   productName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 12,
-    lineHeight: 32,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  stars: {
-    flexDirection: 'row',
-    marginRight: 8,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  price: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#6366F1',
-    marginRight: 12,
-  },
-  originalPrice: {
-    fontSize: 18,
-    color: '#9CA3AF',
-    textDecorationLine: 'line-through',
-  },
-  stockContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    color: '#1F2937',
     marginBottom: 24,
-  },
-  stockText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 6,
+    lineHeight: 36,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 12,
-    marginTop: 24,
-  },
-  description: {
-    fontSize: 16,
-    color: '#4B5563',
-    lineHeight: 24,
+    marginBottom: 16,
+    marginTop: 32,
   },
   featureItem: {
     flexDirection: 'row',
@@ -433,7 +352,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 4,
   },
   quantityButton: {
@@ -456,8 +375,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#6366F1',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingVertical: 18,
     paddingHorizontal: 24,
   },
   disabledButton: {

@@ -5,8 +5,13 @@ const TURSO_URL = 'https://skjsilverssmithgmailcom-tarframework.turso.io/v2/pipe
 const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NDkxNTQ0NzYsImlkIjoiNTMxNmFiZjEtMmU5ZC00ZjRjLTljMTItMmU4ODdkMmRhNjgyIiwicmlkIjoiZjRmYWQ0ODAtNmNmNC00NGEyLTk3MTAtMWI1OTJkNzdkNTE5In0.08KY_FG0_xEpdOIbjS4ilzzrjU2HvXJSZNC4_Gk6hGXsTCHi09fpSdT2MhiDNTSwB7oA24hQ6cKFkEHybrtcAQ';
 
 export class TursoApiService {
-  private async executeQuery(sql: string): Promise<TursoApiResponse> {
+  private async executeQuery(sql: string, args?: any[]): Promise<TursoApiResponse> {
     try {
+      const stmt: any = { sql };
+      if (args && args.length > 0) {
+        stmt.args = args;
+      }
+
       const response = await fetch(TURSO_URL, {
         method: 'POST',
         headers: {
@@ -17,9 +22,7 @@ export class TursoApiService {
           requests: [
             {
               type: 'execute',
-              stmt: {
-                sql: sql,
-              },
+              stmt: stmt,
             },
           ],
         }),
@@ -109,6 +112,7 @@ export class TursoApiService {
       images: images.length > 0 ? images : ['https://via.placeholder.com/400x400?text=No+Image'],
       category: tursoProduct.category,
       categoryId: tursoProduct.category.toLowerCase().replace(/\s+/g, '-'),
+      collection: tursoProduct.collection || undefined,
       brand: tursoProduct.brand || tursoProduct.vendor || 'Unknown',
       rating: Math.round(rating * 10) / 10,
       reviewCount: reviewCount,
@@ -219,6 +223,7 @@ export class TursoApiService {
         return collection;
       });
 
+      console.log('Available collections:', collections.map(c => ({ id: c.id, name: c.name })));
       return collections;
     } catch (error) {
       console.error('Failed to fetch collections:', error);
@@ -256,24 +261,34 @@ export class TursoApiService {
 
   async fetchCollectionById(id: number): Promise<any | null> {
     try {
+      console.log('Executing query for collection ID:', id);
       const response = await this.executeQuery('SELECT * FROM collections WHERE id = ? LIMIT 1', [id]);
+      console.log('Raw response:', JSON.stringify(response, null, 2));
 
       if (!response.results || response.results.length === 0) {
+        console.log('No results in response');
         return null;
       }
 
       const result = response.results[0];
+      console.log('First result:', JSON.stringify(result, null, 2));
+
       if (result.type !== 'ok' || !result.response?.result?.rows || result.response.result.rows.length === 0) {
+        console.log('Result type not ok or no rows');
         return null;
       }
 
       const { cols, rows } = result.response.result;
+      console.log('Columns:', cols);
+      console.log('Rows:', rows);
+
       const collection: any = {};
       cols.forEach((col, index) => {
         const value = rows[0][index]?.value;
         collection[col.name] = value;
       });
 
+      console.log('Parsed collection:', collection);
       return collection;
     } catch (error) {
       console.error('Failed to fetch collection by ID:', error);

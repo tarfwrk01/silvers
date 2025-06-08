@@ -30,8 +30,10 @@ export default function HomeScreen() {
       style={styles.collectionCard}
       onPress={() => router.push(`/collection/${item.id}`)}
     >
-      <Image source={{ uri: item.image }} style={styles.collectionImage} />
-      <View style={styles.collectionOverlay}>
+      <View style={styles.collectionImageContainer}>
+        <Image source={{ uri: item.image }} style={styles.collectionImage} />
+      </View>
+      <View style={styles.collectionInfo}>
         <Text style={styles.collectionName}>{item.name}</Text>
         {item.notes && (
           <Text style={styles.collectionNotes}>{item.notes}</Text>
@@ -201,36 +203,29 @@ const styles = {
   },
   collectionCard: {
     flex: 1,
-    height: 120,
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
     marginHorizontal: 6,
     marginBottom: 12,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#6366F1',
+  },
+  collectionImageContainer: {
+    width: '100%',
+    height: 120,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    overflow: 'hidden',
   },
   collectionImage: {
     width: '100%',
     height: '100%',
-    position: 'absolute',
   },
-  collectionOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  collectionInfo: {
     padding: 12,
   },
   collectionName: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 4,
