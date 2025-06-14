@@ -1,7 +1,8 @@
-import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
+    Dimensions,
+    Image,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -12,6 +13,8 @@ import {
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
+
+const { height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -58,14 +61,23 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>
-          {step === 'email'
-            ? 'Enter your email to sign in'
-            : 'Enter the magic code sent to your email'}
-        </Text>
+      <View style={styles.imageContainer}>
+        <Image
+          source={require('../../assets/images/auth.jpg')}
+          style={styles.authImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.formContainer}>
+        <View style={styles.content}>
+          <Text style={styles.title}>SKJ SILVERS</Text>
+          <Text style={styles.subtitle}>
+            {step === 'email'
+              ? 'Enter your email to access your account'
+              : 'Enter the magic code sent to your email'}
+          </Text>
 
         {step === 'email' ? (
           <View style={styles.form}>
@@ -90,13 +102,6 @@ export default function LoginScreen() {
                 <Text style={styles.buttonText}>Send Magic Code</Text>
               )}
             </TouchableOpacity>
-            
-            <View style={styles.linkContainer}>
-              <Text style={styles.linkText}>Don't have an account? </Text>
-              <Link href="/(auth)/signup" style={styles.link}>
-                <Text style={styles.linkTextBold}>Sign up</Text>
-              </Link>
-            </View>
           </View>
         ) : (
           <View style={styles.form}>
@@ -131,6 +136,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         )}
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -139,25 +145,40 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f8f8',
+  },
+  imageContainer: {
+    height: height * 0.4,
+    width: '100%',
+  },
+  authImage: {
+    width: '100%',
+    height: '100%',
+  },
+  formContainer: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    paddingTop: 20,
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#333',
+    marginTop: 10,
+    color: '#1e3a8a',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: 24,
+    color: '#1e3a8a',
   },
   form: {
     width: '100%',
@@ -172,7 +193,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0ea5e9',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -191,31 +212,13 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   backButtonText: {
-    color: '#007AFF',
+    color: '#0ea5e9',
     fontSize: 16,
   },
   emailDisplay: {
     fontSize: 16,
-    color: '#666',
+    color: '#1e3a8a',
     textAlign: 'center',
     marginBottom: 16,
-  },
-  linkContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  linkText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  link: {
-    marginLeft: 4,
-  },
-  linkTextBold: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
   },
 });

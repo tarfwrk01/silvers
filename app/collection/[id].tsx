@@ -21,7 +21,7 @@ export default function CollectionDetailScreen() {
   const { id } = useLocalSearchParams();
   const { products: allProducts, loading: productsLoading } = useProducts();
   const { collections } = useCollections();
-  const [sortBy, setSortBy] = useState<'name' | 'price_asc' | 'price_desc' | 'newest'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'newest'>('name');
   const insets = useSafeAreaInsets();
 
   // Find collection from the already loaded collections
@@ -55,10 +55,6 @@ export default function CollectionDetailScreen() {
   const sortedProducts = useMemo(() => {
     const sorted = [...filteredProducts];
     switch (sortBy) {
-      case 'price_asc':
-        return sorted.sort((a, b) => a.price - b.price);
-      case 'price_desc':
-        return sorted.sort((a, b) => b.price - a.price);
       case 'newest':
         return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'name':
@@ -115,14 +111,14 @@ export default function CollectionDetailScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Collection</Text>
+        <Text style={styles.headerTitle}>{collection?.name || 'Collection'}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -131,16 +127,12 @@ export default function CollectionDetailScreen() {
         contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Collection Info */}
+        {/* Collection Header Image */}
         {collection && (
-          <View style={styles.collectionInfo}>
-            <Image source={{ uri: collection.image }} style={styles.collectionImage} />
-            <View style={styles.collectionDetails}>
-              <Text style={styles.collectionName}>{collection.name}</Text>
-              {collection.notes && (
-                <Text style={styles.collectionDescription}>{collection.notes}</Text>
-              )}
-              <Text style={styles.productCount}>
+          <View style={styles.collectionHeader}>
+            <Image source={{ uri: collection.image }} style={styles.collectionHeaderImage} />
+            <View style={styles.productCountOverlay}>
+              <Text style={styles.productCountText}>
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
               </Text>
             </View>
@@ -156,8 +148,6 @@ export default function CollectionDetailScreen() {
             contentContainerStyle={styles.sortOptions}
           >
             {renderSortOption('name', 'Name')}
-            {renderSortOption('price_asc', 'Price: Low to High')}
-            {renderSortOption('price_desc', 'Price: High to Low')}
             {renderSortOption('newest', 'Newest')}
           </ScrollView>
         </View>
@@ -214,7 +204,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1F2937',
     flex: 1,
-    textAlign: 'center',
+    textAlign: 'left',
+    marginLeft: 8,
   },
   headerSpacer: {
     width: 40,
@@ -222,38 +213,31 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  collectionInfo: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
+  collectionHeader: {
+    position: 'relative',
+    width: '100%',
   },
-  collectionImage: {
+  collectionHeaderImage: {
     width: '100%',
     height: 200,
   },
-  collectionDetails: {
-    padding: 20,
+  productCountOverlay: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  collectionName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  collectionDescription: {
-    fontSize: 16,
-    color: '#6B7280',
-    lineHeight: 24,
-    marginBottom: 12,
-  },
-  productCount: {
+  productCountText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366F1',
+    color: '#FFFFFF',
   },
   sortSection: {
     paddingHorizontal: 16,
+    marginTop: 16,
     marginBottom: 16,
   },
   sortTitle: {

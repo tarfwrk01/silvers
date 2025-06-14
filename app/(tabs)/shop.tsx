@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -21,11 +22,19 @@ export default function ShopScreen() {
   const { products, loading, error, refreshProducts } = useProducts();
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const insets = useSafeAreaInsets();
+  const { category } = useLocalSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
     sortBy: 'newest',
   });
+
+  // Set initial category filter from URL parameter
+  useEffect(() => {
+    if (category && typeof category === 'string') {
+      setFilters(prev => ({ ...prev, category: decodeURIComponent(category) }));
+    }
+  }, [category]);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];

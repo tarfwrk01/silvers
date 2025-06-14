@@ -2,19 +2,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import { useCategories } from '../../contexts/CategoriesContext';
 import { useCollections } from '../../contexts/CollectionsContext';
 import { useProducts } from '../../contexts/ProductsContext';
 
@@ -23,10 +25,27 @@ const { width, height } = Dimensions.get('window');
 export default function HomeScreen() {
   const { user } = useAuth();
   const { featuredProducts, loading, error, refreshProducts } = useProducts();
+  const { categories, loading: categoriesLoading, error: categoriesError, refreshCategories } = useCategories();
   const { collections, loading: collectionsLoading, error: collectionsError, refreshCollections } = useCollections();
   const { itemCount } = useCart();
   const insets = useSafeAreaInsets();
   const [showMenu, setShowMenu] = useState(false);
+
+  // Sample offers data
+  const offers = [
+    {
+      id: 1,
+      title: "Special Offer",
+      subtitle: "Up to 50% Off",
+      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=200&fit=crop"
+    },
+    {
+      id: 2,
+      title: "New Arrivals",
+      subtitle: "Latest Collection",
+      image: "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=200&fit=crop"
+    }
+  ];
 
 
 
@@ -138,26 +157,81 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
+  const renderCategoryItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.categoryItem}
+      onPress={() => router.push(`/(tabs)/shop?category=${encodeURIComponent(item.name)}`)}
+    >
+      <View style={styles.categoryCircle}>
+        <Image
+          source={{ uri: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop' }}
+          style={styles.categoryImage}
+        />
+      </View>
+      <Text style={styles.categoryTitle}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderOfferItem = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.offerCard}>
+      <Image
+        source={{ uri: item.image }}
+        style={styles.offerImage}
+      />
+      <View style={styles.offerOverlay}>
+        <Text style={styles.offerTitle}>{item.title}</Text>
+        <Text style={styles.offerSubtitle}>{item.subtitle}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      {/* Hero Section */}
-      <View style={styles.heroSection}>
-        {/* Title at the very top */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.mainTitle}>SKJ SILVERS</Text>
-          <Text style={styles.subTitle}>
-            DISCOVER YOUR <Text style={styles.subTitleAccent}>UNIQUE STYLE</Text>{'\n'}
-          </Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          {/* Title at the very top */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.mainTitle}>SKJ SILVERS</Text>
+            <Text style={styles.subTitle}>
+              DISCOVER YOUR <Text style={styles.subTitleAccent}>UNIQUE STYLE</Text>
+            </Text>
+          </View>
+
+          {/* Offers Section */}
+          <View style={styles.offersContainer}>
+            <FlatList
+              data={offers}
+              renderItem={renderOfferItem}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.offersContent}
+              snapToInterval={width * 0.85 + 16} // Snap to card width + margin
+              decelerationRate="fast"
+              pagingEnabled={false}
+            />
+          </View>
+
         </View>
 
-        {/* Our Collections Section */}
-        <Text style={styles.collectionsHeader}>OUR COLLECTIONS</Text>
+        {/* Space below offers */}
+        <View style={styles.spaceBelowOffers} />
 
-        {/* Collections Grid - starts right below title */}
-        <View style={styles.collectionsContainer}>
+        {/* White Background Container for Collections and Categories */}
+        <View style={styles.whiteBackgroundContainer}>
+          {/* Our Collections Section */}
+          <Text style={styles.collectionsHeader}>OUR COLLECTIONS</Text>
+
+          {/* Collections Grid - starts right below title */}
+          <View style={styles.collectionsContainer}>
           {collectionsLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <ActivityIndicator size="large" color="#333333" />
               <Text style={styles.loadingText}>Loading collections...</Text>
             </View>
           ) : collections.length > 0 ? (
@@ -174,7 +248,10 @@ export default function HomeScreen() {
             // Fallback collections if no data
             <View style={styles.collectionsGrid}>
               <View style={styles.collectionRow}>
-                <TouchableOpacity style={styles.collectionItem}>
+                <TouchableOpacity
+                  style={styles.collectionItem}
+                  onPress={() => router.push('/(tabs)/shop?collection=Necklaces')}
+                >
                   <View style={styles.collectionCircle}>
                     <Image
                       source={{ uri: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop' }}
@@ -183,7 +260,10 @@ export default function HomeScreen() {
                   </View>
                   <Text style={styles.collectionTitle}>Necklaces</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.collectionItem}>
+                <TouchableOpacity
+                  style={styles.collectionItem}
+                  onPress={() => router.push('/(tabs)/shop?collection=Rings')}
+                >
                   <View style={styles.collectionCircle}>
                     <Image
                       source={{ uri: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300&h=300&fit=crop' }}
@@ -195,16 +275,89 @@ export default function HomeScreen() {
               </View>
             </View>
           )}
-        </View>
+          </View>
 
-        {/* Browse Button */}
-        <TouchableOpacity
-          style={styles.browseButton}
-          onPress={() => router.push('/necklaces')}
-        >
-          <Text style={styles.browseButtonText}>BROWSE</Text>
-          <Ionicons name="arrow-forward" size={20} color="#2D5A3D" />
-        </TouchableOpacity>
+          {/* Categories Section */}
+          <Text style={styles.categoriesHeader}>CATEGORIES</Text>
+
+
+
+          {/* Categories Grid */}
+          <View style={styles.categoriesContainer}>
+            {categoriesLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#333333" />
+                <Text style={styles.loadingTextDark}>Loading categories...</Text>
+              </View>
+            ) : categories.length > 0 ? (
+              <FlatList
+                data={categories}
+                renderItem={renderCategoryItem}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={2}
+                scrollEnabled={false}
+                contentContainerStyle={styles.categoriesGrid}
+                columnWrapperStyle={styles.categoryRow}
+              />
+            ) : (
+              // Fallback categories if no data
+              <View style={styles.categoriesGrid}>
+                <View style={styles.categoryRow}>
+                  <TouchableOpacity
+                    style={styles.categoryItem}
+                    onPress={() => router.push('/(tabs)/shop?category=Rings')}
+                  >
+                    <View style={styles.categoryCircle}>
+                      <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop' }}
+                        style={styles.categoryImage}
+                      />
+                    </View>
+                    <Text style={styles.categoryTitle}>Rings</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.categoryItem}
+                    onPress={() => router.push('/(tabs)/shop?category=Earrings')}
+                  >
+                    <View style={styles.categoryCircle}>
+                      <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300&h=300&fit=crop' }}
+                        style={styles.categoryImage}
+                      />
+                    </View>
+                    <Text style={styles.categoryTitle}>Earrings</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.categoryRow}>
+                  <TouchableOpacity
+                    style={styles.categoryItem}
+                    onPress={() => router.push('/(tabs)/shop?category=Necklaces')}
+                  >
+                    <View style={styles.categoryCircle}>
+                      <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop' }}
+                        style={styles.categoryImage}
+                      />
+                    </View>
+                    <Text style={styles.categoryTitle}>Necklaces</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.categoryItem}
+                    onPress={() => router.push('/(tabs)/shop?category=Bracelets')}
+                  >
+                    <View style={styles.categoryCircle}>
+                      <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop' }}
+                        style={styles.categoryImage}
+                      />
+                    </View>
+                    <Text style={styles.categoryTitle}>Bracelets</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
 
         {/* Bottom decorative element */}
         <View style={styles.bottomDecorative}>
@@ -213,7 +366,7 @@ export default function HomeScreen() {
             <View style={styles.decorativeLine} />
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       {renderNavigationMenu()}
     </View>
@@ -223,108 +376,227 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A8A', // Dark blue background
+    backgroundColor: '#F8F9FA', // Very light silver/white background
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40, // Proper bottom spacing
   },
 
   // Hero Section Styles
   heroSection: {
-    flex: 1,
-    paddingTop: 50, // Reduced space at top for title
-    paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingTop: 40,
+    paddingBottom: 30,
+    backgroundColor: '#42948a', // Teal background color
+    alignItems: 'center',
   },
 
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 30, // Reduced spacing between title and collections
+    marginBottom: 30,
+    paddingHorizontal: 20,
   },
   mainTitle: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: '800',
-    color: '#D4AF37', // Gold color for main title
+    color: '#FFFFFF',
     textAlign: 'center',
-    letterSpacing: 2,
-    marginBottom: 10,
+    letterSpacing: 1.5,
+    marginBottom: 8,
   },
   subTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
     letterSpacing: 0.5,
+    opacity: 0.95,
   },
   subTitleAccent: {
-    color: '#D4AF37', // Gold color for "UNIQUE"
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  // Offers Section Styles
+  offersContainer: {
+    width: '100%',
+  },
+  offersContent: {
+    paddingLeft: 20,
+    paddingRight: 4, // Reduced right padding to prevent cut-off
+  },
+  offerCard: {
+    width: width * 0.85, // Responsive width
+    height: 140,
+    marginRight: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  offerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  offerOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: 20,
+  },
+  offerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  offerSubtitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '500',
+    opacity: 0.95,
+    letterSpacing: 0.3,
+  },
+
+  // Space below offers
+  spaceBelowOffers: {
+    height: 20,
+    backgroundColor: '#42948a',
+  },
+
+  // White Background Container for Collections and Categories
+  whiteBackgroundContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 40, // Ensure proper bottom spacing
+    minHeight: 400, // Prevent container collapse
   },
 
   collectionsHeader: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    letterSpacing: 1,
-    marginBottom: 20,
-    marginTop: 10,
+    color: '#333333',
+    textAlign: 'left',
+    letterSpacing: 0.5,
+    marginBottom: 24,
+    marginTop: 30,
+    paddingHorizontal: 20,
   },
 
   collectionsContainer: {
-    flex: 1,
-    marginBottom: 40,
+    paddingBottom: 20, // Reduced to give more space for categories
   },
   collectionsGrid: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   collectionRow: {
-    justifyContent: 'space-around',
-    marginBottom: 30,
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   collectionItem: {
     alignItems: 'center',
-    width: (width - 60) / 2, // Two columns with proper spacing
+    width: (width - 40) / 2,
+    paddingHorizontal: 4,
   },
   collectionCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 20,
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 0,
     overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
+    backgroundColor: '#f8f9fa',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     marginBottom: 12,
   },
   collectionImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   collectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#333333',
+    fontSize: 15,
+    fontWeight: '700',
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    lineHeight: 20,
   },
 
-  browseButton: {
-    flexDirection: 'row',
+  // Categories Section Styles
+  categoriesHeader: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#333333',
+    textAlign: 'left',
+    letterSpacing: 0.5,
+    marginBottom: 24,
+    marginTop: 30,
+    paddingHorizontal: 20,
+  },
+
+  categoriesContainer: {
+    paddingBottom: 60, // Extra bottom spacing for categories
+  },
+  categoriesGrid: {
+    paddingHorizontal: 16,
+  },
+  categoryRow: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  categoryItem: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 25,
-    alignSelf: 'center',
-    marginTop: 20,
+    width: (width - 40) / 2,
+    paddingHorizontal: 4,
   },
-  browseButtonText: {
-    color: '#1E3A8A',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
-    letterSpacing: 1,
+  categoryCircle: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 0,
+    overflow: 'hidden',
+    backgroundColor: '#f8f9fa',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    marginBottom: 12,
   },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  categoryTitle: {
+    color: '#333333',
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: 0.3,
+    lineHeight: 20,
+  },
+
+
 
   bottomDecorative: {
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
   },
   decorativeElement: {
     flexDirection: 'row',
@@ -334,22 +606,30 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#1E3A8A', // Dark sky blue to match theme
     marginRight: 8,
   },
   decorativeLine: {
     width: 30,
     height: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#333333', // Dark line for light background
     opacity: 0.5,
   },
 
   loadingContainer: {
     alignItems: 'center',
     paddingVertical: 40,
+    minHeight: 200, // Prevent container distortion during loading
+    justifyContent: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: '#333333', // Dark text for light background
+    fontSize: 14,
+    marginTop: 12,
+    opacity: 0.8,
+  },
+  loadingTextDark: {
+    color: '#333333', // Dark text for categories loading
     fontSize: 14,
     marginTop: 12,
     opacity: 0.8,

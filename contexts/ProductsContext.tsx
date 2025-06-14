@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { Product } from '../types';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { tursoApi } from '../services/tursoApi';
+import { Product } from '../types';
 
 interface ProductsState {
   products: Product[];
@@ -97,14 +97,15 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
 
   const fetchFeaturedProducts = async () => {
     if (state.loading) return;
-    
+
     try {
       dispatch({ type: 'FETCH_START' });
       const featuredProducts = await tursoApi.fetchFeaturedProducts();
       dispatch({ type: 'FETCH_FEATURED_SUCCESS', payload: featuredProducts });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch featured products';
-      dispatch({ type: 'FETCH_ERROR', payload: errorMessage });
+      // Silently handle featured products errors since they're not critical
+      console.log('Featured products not available:', error);
+      dispatch({ type: 'FETCH_FEATURED_SUCCESS', payload: [] });
     }
   };
 

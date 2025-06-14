@@ -1,6 +1,5 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
-import { Redirect } from "expo-router";
 
 export default function AuthLayout() {
   const { user } = useAuth();
@@ -18,7 +17,6 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="login" />
-      <Stack.Screen name="signup" />
     </Stack>
   );
 }
