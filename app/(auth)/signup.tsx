@@ -1,45 +1,43 @@
+import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { Link } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code'>('email');
   const { signInWithMagicCode, verifyMagicCode, isLoading } = useAuth();
+  const { showNotification } = useNotification();
 
   const handleSendMagicCode = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      showNotification('Please enter your email address', 'error');
       return;
     }
 
     try {
       await signInWithMagicCode(email.trim().toLowerCase());
       setStep('code');
-      Alert.alert(
-        'Magic Code Sent',
-        'Check your email for the magic code and enter it below to create your account.'
-      );
+      showNotification('Magic code sent to your email', 'info');
     } catch (err) {
-      Alert.alert('Error', 'Failed to send magic code. Please try again.');
+      showNotification('Failed to send magic code. Please try again.', 'error');
     }
   };
 
   const handleVerifyCode = async () => {
     if (!code.trim()) {
-      Alert.alert('Error', 'Please enter the magic code');
+      showNotification('Please enter the magic code', 'error');
       return;
     }
 
@@ -47,7 +45,7 @@ export default function SignupScreen() {
       await verifyMagicCode(email.trim().toLowerCase(), code.trim());
       // Navigation will be handled by the auth state change
     } catch (err) {
-      Alert.alert('Error', 'Invalid magic code. Please try again.');
+      showNotification('Invalid magic code. Please try again.', 'error');
     }
   };
 

@@ -8,6 +8,7 @@ import { CategoriesProvider } from "../contexts/CategoriesContext";
 import { CheckoutProvider } from "../contexts/CheckoutContext";
 import { CollectionsProvider } from "../contexts/CollectionsContext";
 import { FavoritesProvider } from "../contexts/FavoritesContext";
+import { NotificationProvider } from "../contexts/NotificationContext";
 import { ProductsProvider } from "../contexts/ProductsContext";
 import "../polyfills";
 
@@ -26,32 +27,34 @@ function RootLayoutContent() {
           }}
         />
       )}
-      <AuthProvider>
-        <ProductsProvider>
-          <CollectionsProvider>
-            <CategoriesProvider>
-              <CartProvider>
-                <CheckoutProvider>
-                  <FavoritesProvider>
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      animation: "none",
-                      animationEnabled: false,
-                      gestureEnabled: false,
-                    }}
-                  >
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="(auth)" />
-                    <Stack.Screen name="(tabs)" />
-                  </Stack>
-                  </FavoritesProvider>
-                </CheckoutProvider>
-              </CartProvider>
-            </CategoriesProvider>
-          </CollectionsProvider>
-        </ProductsProvider>
-      </AuthProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <ProductsProvider>
+            <CollectionsProvider>
+              <CategoriesProvider>
+                <CartProvider>
+                  <CheckoutProvider>
+                    <FavoritesProvider>
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        animation: "none",
+                        animationEnabled: false,
+                        gestureEnabled: false,
+                      }}
+                    >
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="(auth)" />
+                      <Stack.Screen name="(tabs)" />
+                    </Stack>
+                    </FavoritesProvider>
+                  </CheckoutProvider>
+                </CartProvider>
+              </CategoriesProvider>
+            </CollectionsProvider>
+          </ProductsProvider>
+        </AuthProvider>
+      </NotificationProvider>
     </>
   );
 }

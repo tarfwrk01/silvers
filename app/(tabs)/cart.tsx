@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    Alert,
     FlatList,
     Image,
+    Modal,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../../contexts/CartContext';
@@ -17,31 +17,34 @@ import { CartItem } from '../../types';
 export default function CartScreen() {
   const { items, total, itemCount, updateQuantity, removeFromCart, clearCart } = useCart();
   const insets = useSafeAreaInsets();
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      Alert.alert(
-        'Remove Item',
-        'Are you sure you want to remove this item from your cart?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Remove', style: 'destructive', onPress: () => removeFromCart(productId) },
-        ]
-      );
+      setItemToRemove(productId);
+      setShowRemoveConfirm(true);
     } else {
       updateQuantity(productId, newQuantity);
     }
   };
 
   const handleClearCart = () => {
-    Alert.alert(
-      'Clear Cart',
-      'Are you sure you want to remove all items from your cart?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Clear All', style: 'destructive', onPress: clearCart },
-      ]
-    );
+    setShowClearConfirm(true);
+  };
+
+  const confirmRemoveItem = () => {
+    if (itemToRemove) {
+      removeFromCart(itemToRemove);
+      setItemToRemove(null);
+    }
+    setShowRemoveConfirm(false);
+  };
+
+  const confirmClearCart = () => {
+    clearCart();
+    setShowClearConfirm(false);
   };
 
   const formatPrice = (price: number) => {
@@ -177,6 +180,70 @@ export default function CartScreen() {
           <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
+
+      {/* Remove Item Bottom Drawer */}
+      <Modal
+        visible={showRemoveConfirm}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowRemoveConfirm(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.bottomDrawer}>
+            <View style={styles.drawerHandle} />
+            <Text style={styles.drawerTitle}>Remove Item</Text>
+            <Text style={styles.drawerMessage}>
+              Are you sure you want to remove this item from your cart?
+            </Text>
+            <View style={styles.drawerButtons}>
+              <TouchableOpacity
+                style={[styles.drawerButton, styles.cancelButton]}
+                onPress={() => setShowRemoveConfirm(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.drawerButton, styles.confirmButton]}
+                onPress={confirmRemoveItem}
+              >
+                <Text style={styles.confirmButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Clear Cart Bottom Drawer */}
+      <Modal
+        visible={showClearConfirm}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowClearConfirm(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.bottomDrawer}>
+            <View style={styles.drawerHandle} />
+            <Text style={styles.drawerTitle}>Clear Cart</Text>
+            <Text style={styles.drawerMessage}>
+              Are you sure you want to remove all items from your cart?
+            </Text>
+            <View style={styles.drawerButtons}>
+              <TouchableOpacity
+                style={[styles.drawerButton, styles.cancelButton]}
+                onPress={() => setShowClearConfirm(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.drawerButton, styles.confirmButton]}
+                onPress={confirmClearCart}
+              >
+                <Text style={styles.confirmButtonText}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -370,5 +437,66 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginRight: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomDrawer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
+  },
+  drawerHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  drawerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  drawerMessage: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  drawerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  drawerButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  confirmButton: {
+    backgroundColor: '#EF4444',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

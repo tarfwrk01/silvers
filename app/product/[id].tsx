@@ -3,7 +3,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Dimensions,
     Image,
     Modal,
@@ -77,7 +76,7 @@ export default function ProductDetailScreen() {
 
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedOptions);
-    Alert.alert('Added to Cart', `${product.name} has been added to your cart.`);
+    // No success dialog - item is silently added to cart
   };
 
   const renderRating = () => {

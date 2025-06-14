@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -11,17 +10,19 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../contexts/CartContext';
 import { useCheckout } from '../contexts/CheckoutContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { tursoApi } from '../services/tursoApi';
 
 export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const { items, total } = useCart();
   const { placeOrder, isLoading, error } = useCheckout();
+  const { showNotification } = useNotification();
 
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -54,37 +55,31 @@ export default function CheckoutScreen() {
       console.log('Testing database connection...');
       const connectionOk = await tursoApi.testDatabaseConnection();
       if (connectionOk) {
-        Alert.alert('Success', 'Database connection is working!');
+        console.log('✅ Database connection is working!');
+        showNotification('Database connection is working!', 'success');
       } else {
-        Alert.alert('Error', 'Database connection failed');
+        console.log('❌ Database connection failed');
+        showNotification('Database connection failed', 'error');
       }
     } catch (error) {
       console.error('Database test error:', error);
-      Alert.alert('Error', `Database test failed: ${error}`);
+      showNotification('Database test failed', 'error');
     }
   };
 
   const handlePlaceOrder = async () => {
     if (!customerInfo.name.trim() || !customerInfo.email.trim()) {
-      Alert.alert('Error', 'Please fill in your name and email address.');
+      showNotification('Please fill in your name and email address', 'error');
       return;
     }
 
     const success = await placeOrder(customerInfo);
 
     if (success) {
-      Alert.alert(
-        'Order Placed!',
-        'Your order has been successfully placed. You will receive a confirmation email shortly.',
-        [
-          {
-            text: 'Continue Shopping',
-            onPress: () => router.replace('/(tabs)/home'),
-          },
-        ]
-      );
+      // Navigate directly to home without showing success dialog
+      router.replace('/(tabs)/home');
     } else {
-      Alert.alert('Error', error || 'Failed to place order. Please try again.');
+      showNotification(error || 'Failed to place order. Please try again.', 'error');
     }
   };
 
