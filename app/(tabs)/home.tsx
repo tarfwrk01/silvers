@@ -35,14 +35,14 @@ export default function HomeScreen() {
   const offers = [
     {
       id: 1,
-      title: "Special Offer",
-      subtitle: "Up to 50% Off",
+      title: "Lowest Price",
+      subtitle: "On Market",
       image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=200&fit=crop"
     },
     {
       id: 2,
       title: "New Arrivals",
-      subtitle: "Latest Collection",
+      subtitle: "Every Week",
       image: "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400&h=200&fit=crop"
     }
   ];
@@ -198,7 +198,7 @@ export default function HomeScreen() {
           <View style={styles.titleContainer}>
             <Text style={styles.mainTitle}>SKJ SILVERS</Text>
             <Text style={styles.subTitle}>
-              DISCOVER YOUR <Text style={styles.subTitleAccent}>UNIQUE STYLE</Text>
+              Discover your individual style;{'\n'}make yourself elegant.
             </Text>
           </View>
 
@@ -397,29 +397,31 @@ const styles = StyleSheet.create({
 
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
+    marginBottom: 32,
+    paddingHorizontal: 24,
+    maxWidth: 320,
+    alignSelf: 'center',
   },
   mainTitle: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
-    letterSpacing: 1.5,
-    marginBottom: 8,
+    letterSpacing: 1.2,
+    marginBottom: 12,
+    fontFamily: 'Montserrat',
   },
   subTitle: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '400',
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 24,
-    letterSpacing: 0.5,
-    opacity: 0.95,
-  },
-  subTitleAccent: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    lineHeight: 28,
+    letterSpacing: 0.3,
+    opacity: 0.92,
+    fontFamily: 'System',
+    maxWidth: 280,
+    marginHorizontal: 'auto',
   },
 
   // Offers Section Styles

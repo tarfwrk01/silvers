@@ -50,7 +50,9 @@ export default function ProductOptions({ options, onSelectionChange }: ProductOp
     <View style={styles.container}>
       {Object.entries(groupedOptions).map(([groupName, groupOptions]) => (
         <View key={groupName} style={styles.optionGroup}>
-          <Text style={styles.groupTitle}>{groupName}</Text>
+          <Text style={styles.groupTitle}>
+            {groupName} <Text style={styles.requiredIndicator}>*</Text>
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -95,6 +97,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1F2937',
     marginBottom: 12,
+  },
+  requiredIndicator: {
+    color: '#EF4444',
+    fontSize: 18,
+    fontWeight: '700',
   },
   optionsContainer: {
     paddingRight: 16,

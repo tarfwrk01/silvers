@@ -17,6 +17,7 @@ import ProductOptions from '../../components/ProductOptions';
 import ZoomableImage from '../../components/ZoomableImage';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { useProduct } from '../../contexts/ProductsContext';
 
 const { width } = Dimensions.get('window');
@@ -30,6 +31,7 @@ export default function ProductDetailScreen() {
 
   const { addToCart, isInCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { showNotification } = useNotification();
   const { product, loading, error } = useProduct(id as string);
   const insets = useSafeAreaInsets();
 
@@ -75,6 +77,33 @@ export default function ProductDetailScreen() {
   };
 
   const handleAddToCart = () => {
+    // Check if product has options and validate selection
+    if (product.options && product.options.length > 0) {
+      // Group options by title to check if all groups have selections
+      const optionGroups = product.options.reduce((acc, option) => {
+        const groupKey = option.title;
+        if (!acc[groupKey]) {
+          acc[groupKey] = [];
+        }
+        acc[groupKey].push(option);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      // Check if all option groups have selections
+      const missingSelections = Object.keys(optionGroups).filter(
+        groupKey => !selectedOptions[groupKey]
+      );
+
+      if (missingSelections.length > 0) {
+        const missingText = missingSelections.length === 1
+          ? `Please select ${missingSelections[0].toLowerCase()}`
+          : `Please select ${missingSelections.join(', ').toLowerCase()}`;
+
+        showNotification(missingText, 'error');
+        return;
+      }
+    }
+
     addToCart(product, quantity, selectedOptions);
     // No success dialog - item is silently added to cart
   };
