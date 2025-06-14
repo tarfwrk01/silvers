@@ -6,6 +6,7 @@ interface CustomerInfo {
   name: string;
   email: string;
   phone?: string;
+  gstNo?: string;
   shippingAddress?: {
     street: string;
     city: string;

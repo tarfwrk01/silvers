@@ -51,27 +51,14 @@ export default function CartScreen() {
     setShowClearConfirm(false);
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (items.length === 0) {
       showNotification('Your cart is empty', 'error');
       return;
     }
 
-    // For now, we'll use placeholder customer info
-    // In a real app, you'd collect this from a form
-    const customerInfo = {
-      name: 'Customer',
-      email: 'customer@example.com',
-      phone: '1234567890',
-    };
-
-    const success = await placeOrder(customerInfo);
-    if (success) {
-      showNotification('Order placed successfully!', 'success');
-      router.push('/(tabs)/home');
-    } else {
-      showNotification('Failed to place order. Please try again.', 'error');
-    }
+    // Navigate to customer details screen
+    router.push('/customer-details');
   };
 
   const formatSelectedOptions = (selectedOptions?: Record<string, any>) => {

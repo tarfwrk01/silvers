@@ -579,15 +579,26 @@ export class TursoApiService {
 
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-      const taxRate = 0.08; // 8% tax
-      const tax = subtotal * taxRate;
+
+      // Store GST number in tax column as requested
+      const tax = customerInfo.gstNo || ''; // Store GST number directly in tax column
+
       const shipping = subtotal >= 75 ? 0 : 9.99; // Free shipping over $75
-      const total = subtotal + tax + shipping;
+      const total = subtotal + shipping; // Total without tax calculation since GST is stored as identifier
 
       console.log('💰 Order totals calculated:', { subtotal, tax, shipping, total });
 
       // Create order
       console.log('📝 Creating order record...');
+
+      // Format shipping address
+      const shippingAddress = customerInfo.shippingAddress || {};
+      const shipaddrs = `${shippingAddress.street || ''}, ${shippingAddress.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
+
+      // Format billing address (same as shipping for now)
+      const billingAddress = customerInfo.billingAddress || customerInfo.shippingAddress || {};
+      const billaddrs = `${billingAddress.street || ''}, ${billingAddress.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
+
       const orderData = {
         referid,
         customerid: null, // For guest checkout
@@ -598,8 +609,8 @@ export class TursoApiService {
         total,
         tax,
         shipping,
-        shipaddrs: JSON.stringify(customerInfo.shippingAddress || {}),
-        billaddrs: JSON.stringify(customerInfo.billingAddress || {})
+        shipaddrs: shipaddrs || 'Address not provided',
+        billaddrs: billaddrs || 'Address not provided'
       };
       console.log('Order data to create:', JSON.stringify(orderData, null, 2));
 
@@ -628,8 +639,8 @@ export class TursoApiService {
           qty: item.quantity,
           price: item.product.price,
           total: item.product.price * item.quantity,
-          taxrate: taxRate,
-          taxamt: (item.product.price * item.quantity) * taxRate
+          taxrate: 0, // No tax rate calculation since GST is stored as identifier
+          taxamt: 0 // No tax amount calculation since GST is stored as identifier
         };
 
         console.log('Order item data:', JSON.stringify(orderItemData, null, 2));
