@@ -178,7 +178,8 @@ export default function HomeScreen() {
         source={{ uri: item.image }}
         style={styles.offerImage}
       />
-      <View style={styles.offerOverlay}>
+      <View style={styles.offerDarkOverlay} />
+      <View style={styles.offerTextContainer}>
         <Text style={styles.offerTitle}>{item.title}</Text>
         <Text style={styles.offerSubtitle}>{item.subtitle}</Text>
       </View>
@@ -450,12 +451,19 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  offerOverlay: {
+  offerDarkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dark overlay on entire image
+  },
+  offerTextContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     padding: 20,
   },
   offerTitle: {
@@ -464,13 +472,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: 0.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   offerSubtitle: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '500',
-    opacity: 0.95,
     letterSpacing: 0.3,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
 
   // Space below offers
